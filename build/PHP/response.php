@@ -1,12 +1,5 @@
 <?php
-function AddDefineJson($filename) {
-	echo $filename;
-	$json = file_get_contents($filename);
-	$data = json_decode($json, TRUE);
-	foreach ($data as $def => $v){
-		define($def, $v);
-	}
-}
+
 
 define("DEFAULT_ERRNO", 527);
 
@@ -25,6 +18,14 @@ class Response {
 	function printResponseJson() {
 		header("Content-type:application/json");
 		print json_encode($this->response);
+	}
+	function AddDefineJson($filename) {
+		echo $filename;
+		$json = file_get_contents($filename);
+		$data = json_decode($json, TRUE);
+		foreach ($data as $def => $v){
+			define($def, $v);
+		}
 	}
 }
 ?>
