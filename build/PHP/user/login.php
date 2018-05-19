@@ -4,59 +4,56 @@ $response = new Response();
 
 $mysql = $_UserManager->getMysql();
 $json = $_UserManager->getJson();
-$name=$json['name'];
-$pwd=$json['pwd'];
+$name=$json['userName'];
+$pwd=$json['password'];
+// $name = "testname";
+// $pwd = "testpwd";
 
 if($name==''){
-	$response->handlerError('用户名不能为空');
-	$response->printJson();
+	$response->handleError('用户名不能为空');
+	$response->setResponse('loginStatus', DEFAULT_ERRNO);
+	$response->printResponseJson();
 	exit;
 }
 if($pwd==''){
-	$response->handlerError('密码不能为空');
-	$response->printJson();
+	$response->handleError('密码不能为空');
+	$response->setResponse('loginStatus', DEFAULT_ERRNO);
+	$response->printResponseJson();
 	exit;
 }
 
-$stmt = $mysqli->prepare($insertQuery);
-$stmt->bind_param('ss', $name, $pwd);
-$stmt->execute();
-
-if($stmt->errno){
-	$response->handlerError('增加用户出错，Errno: '.$stmt->errno.'. Error: '. $stmt->error);
-	$response->printJson();
-	exit;
-}else {
-	// 注册成功
-	$response->printJson();
-	exit;
-}
-$selectQuery = "SELECT id, username, password FROM users WHERE username= ?"; //从数据库查询信息
-$stmt = $mysqli->prepare($stmt,$selectQuery);
+$selectQuery = "SELECT id, username, password, isAdmin FROM users WHERE username= ?"; //从数据库查询信息
+$stmt = $mysql->prepare($selectQuery);
 $stmt->bind_param('s',$name);
 $stmt->execute();
-$stmt->bind_result($result['id'], $result['username'], $result['pwd']);
-$stmt->fetch();
+$stmt->bind_result($result['id'], $result['username'], $result['pwd'], $result['isAdmin']);
+
 if($stmt->fetch()) {
-	if($pwd != $result['pwd'] || $name !=$result['username']){
-		$response->handlerError('密码错误');
-		$response->printJson();
+	if($pwd != $result['pwd']){
+		$response->handleError('密码错误');
+		$response->setResponse('loginStatus', LOGIN_STATUS_FAILURE);
+		$response->printResponseJson();
 		exit;
 	}
 	else{
-		if($_UserManager->login($result['id'], $result['username'])){
-			$response->printJson();
+		if($_UserManager->login($result['id'], $result['username'], $result['isAdmin'])){
+			$response->setResponse('loginStatus', LOGIN_STATUS_SUCCESS);
+			$response->setResponse('userID', $result['id']);
+			$response->printResponseJson();
 			exit;
 		}
 		else {
-			$response->handlerError('登陆失败');
-			$response->printJson();
+			$response->handleError('登陆失败');
+			$response->setResponse('loginStatus', LOGIN_STATUS_FAILURE);
+			$response->printResponseJson();
 			exit;
 		}
 	}
-}else{
-	$response->handlerError('用户'.$name.'不存在');
-	$response->printJson();
+}
+else {
+	$response->handleError('用户'.$name.'不存在');
+	$response->setResponse('loginStatus', LOGIN_STATUS_FAILURE);
+	$response->printResponseJson();
 	exit;
 };
 ?>
