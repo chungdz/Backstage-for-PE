@@ -1,0 +1,13 @@
+Database: SHIKE
+User table: users
+	id
+username
+	password
+isAdmin
+createTime
+updateTime
+mobile
+Canteen table: canteens
+canteen_id
+canteen_name
+canteen_pic
