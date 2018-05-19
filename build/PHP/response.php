@@ -1,6 +1,5 @@
 <?php
 
-
 define("DEFAULT_ERRNO", 527);
 
 class Response {

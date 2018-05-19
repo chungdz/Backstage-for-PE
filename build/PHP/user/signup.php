@@ -1,6 +1,6 @@
 <?php
 include 'userManager.php';
-include '../response.php'
+include '../response.php';
 $response = new Response();
 $response->AddDefineJson('configure.json');
 

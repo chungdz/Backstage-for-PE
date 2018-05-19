@@ -56,6 +56,9 @@ class UserManager {
 			return FALSE;
 		return $_SESSION['isAdmin'];
 	}
+	function getId() {
+		return $_SESSION['user_id'];
+	}
 }
 session_start();
 $_UserManager = new UserManager();
