@@ -1,12 +1,14 @@
 <?php
-define('LOGIN_STATUS_SUCCESS', 0);
-define('LOGIN_STATUS_FAILURE', 1);
-//返回json，0为成功，1为用户名已存在，2为手机号已存在
-define('SIGNUP_STATUS_SUCCESS', 0);
-define('SIGNUP_STATUS_NAME_EXISTS', 1);
-define('SIGNUP_STATUS_MOBILE_EXISTS', 2);
+function AddDefineJson($filename) {
+	echo $filename;
+	$json = file_get_contents($filename);
+	$data = json_decode($json, TRUE);
+	foreach ($data as $def => $v){
+		define($def, $v);
+	}
+}
 
-define('DEFAULT_ERRNO', 527);
+define("DEFAULT_ERRNO", 527);
 
 class Response {
 	public $errno = 0;

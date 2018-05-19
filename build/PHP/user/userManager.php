@@ -1,5 +1,6 @@
 <?php
 include '../response.php';
+AddDefineJson('configure.json');
 
 class UserManager {
 	private $mysql = NULL;
