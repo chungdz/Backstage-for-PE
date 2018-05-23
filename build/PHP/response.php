@@ -19,7 +19,6 @@ class Response {
 		print json_encode($this->response);
 	}
 	function AddDefineJson($filename) {
-		echo $filename;
 		$json = file_get_contents($filename);
 		$data = json_decode($json, TRUE);
 		foreach ($data as $def => $v){

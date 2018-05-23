@@ -1,15 +1,23 @@
 <?php
+include 'helper.php';
 include 'userManager.php';
 include '../response.php';
+
 $response = new Response();
 $response->AddDefineJson('configure.json');
 
 $mysql = $_UserManager->getMysql();
+$mysqlCheck = new MysqlCheck($mysql);
+
 $json = $_UserManager->getJson();
 $name = $json['userName'];
 $pwd = $json['password'];
 if(isset($json['mobile']) && $json['mobile'] != '')
 	$mobile = $json['mobile'];
+
+// $name = "testname";
+// $pwd = "testpwd";
+// $mobile = "12345678910";
 
 if(isset($json['isAdmin'])) {
 	if(!$_UserManager->isAdmin()) {
@@ -19,10 +27,6 @@ if(isset($json['isAdmin'])) {
 		exit;
 	}
 }
-
-// $name = "testname";
-// $pwd = "testpwd";
-// $mobile = "12345678910";
 
 if($name==''){
 	$response->handleError('用户名不能为空');
@@ -62,38 +66,23 @@ if(strlen($pwd) < 6 || 16 < strlen($pwd)){
 	exit;
 }
 
-function StmtToErrMsg($stmt) {
-	return 'Errno: '.$stmt->errno.' Error: '.$stmt->error;
+$mysqlCheck->checkUnique('username', $name);
+if($mysqlCheck->errno) {
+	$response->handleError($mysqlCheck->error);
+	$response->setResponse('signupStatus', SIGNUP_STATUS_NAME_EXISTS);
+	$response->printResponseJson();
+	exit;
 }
 
-function CheckUnique($mysql, $response, $k, $v, $errno) {
-	$query = "SELECT COUNT(*) FROM users WHERE ".$k." = ?";
-	$stmt = $mysql->prepare($query);
-	$stmt->bind_param('s', $v);
-	$stmt->execute();
-	if($stmt->errno) {
-		$response->handleError(StmtToErrMsg($stmt));
-		$response->setResponse('signupStatus', DEFAULT_ERRNO);
+if(isset($mobile)) {
+	$mysqlCheck->checkUnique('mobile', $mobile);
+	if($mysqlCheck->errno) {
+		$response->handleError($mysqlCheck->error);
+		$response->setResponse('signupStatus', SIGNUP_STATUS_MOBILE_EXISTS);
 		$response->printResponseJson();
-		return FALSE;
+		exit;
 	}
-	else {
-		$stmt->bind_result($cnt);
-		$stmt->fetch();
-		if($cnt > 0) {
-			$response->handleError($k.': '.$v.' already exists.');
-			$response->setResponse('signupStatus', $errno);
-			$response->printResponseJson();
-			return FALSE;
-		}
-	}
-	return TRUE;
 }
-
-if(!CheckUnique($mysql, $response, 'username',$name, SIGNUP_STATUS_NAME_EXISTS))
-	exit;
-if(isset($mobile) && !CheckUnique($mysql, $response, 'mobile',$mobile, SIGNUP_STATUS_MOBILE_EXISTS))
-	exit;
 
 $insertQuery = "INSERT INTO users(username,password,mobile)VALUES(?, ?, ?)";
 $stmt = $mysql->prepare($insertQuery);
@@ -104,27 +93,27 @@ if($stmt->errno){
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
-}else {
-	// 设置管理员isAdmin
-	if(isset($json['isAdmin'])) {
-		$isAdmin = $json['isAdmin'];
-		$insertId = $stmt->insert_id;
-		$adminQuery = "UPDATE users SET isAdmin = ? WHERE id = ?";
-		$adminStmt = $mysql->prepare($adminQuery);
-		$adminStmt->bind_param('ii', $isAdmin, $insertId);
-		$adminStmt->execute();
-		if($adminStmt->errno){
-			$response->handleError($StmtToErrMsg($stmt));
-			$response->setResponse('signupStatus', DEFAULT_ERRNO);
-			$response->printResponseJson();
-			exit;
-		}
-		else
-			$response->setResponse('adminInfo', '"isAdmin" is set to '.$isAdmin);
-	}
-	// 注册成功
-	$response->setResponse('signupStatus', SIGNUP_STATUS_SUCCESS);
-	$response->printResponseJson();
-	exit;
 }
+// 设置管理员isAdmin
+if(isset($json['isAdmin'])) {
+	$isAdmin = $json['isAdmin'];
+	$insertId = $stmt->insert_id;
+	$adminQuery = "UPDATE users SET isAdmin = ? WHERE id = ?";
+	$adminStmt = $mysql->prepare($adminQuery);
+	$adminStmt->bind_param('ii', $isAdmin, $insertId);
+	$adminStmt->execute();
+	if($adminStmt->errno){
+		$response->handleError($StmtToErrMsg($stmt));
+		$response->setResponse('signupStatus', DEFAULT_ERRNO);
+		$response->printResponseJson();
+		exit;
+	}
+	else
+		$response->setResponse('adminInfo', '"isAdmin" is set to '.$isAdmin);
+}
+// 注册成功
+$response->setResponse('signupStatus', SIGNUP_STATUS_SUCCESS);
+$response->printResponseJson();
+exit;
+
 ?>
