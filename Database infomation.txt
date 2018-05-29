@@ -11,3 +11,9 @@ Canteen table: canteens
 canteen_id
 canteen_name
 canteen_pic
+
+dishes:
+dish_id
+dish_name
+canteen_id
+dish_pic
