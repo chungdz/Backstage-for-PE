@@ -11,7 +11,7 @@
 <html class="js cssanimations"><head lang="en">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
-  <title>管理食堂</title>
+  <title>管理评论</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no">
@@ -81,7 +81,7 @@
 
 <header class="am-topbar">
   <h1 class="am-topbar-brand">
-    <a href="#">食堂管理</a>
+    <a href="#">评论管理</a>
   </h1>
 
   <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#doc-topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span class="am-icon-bars"></span></button>
@@ -89,9 +89,16 @@
   <div class="am-collapse am-topbar-collapse" id="doc-topbar-collapse">
   
 	<ul class="am-nav am-nav-pills am-topbar-nav">
-		<li class><a href="addcanteen.php">增加</a></li>
 		<li class><a href="../index.php">首页</a></li>
     </ul>
+	
+    <form method="get" action="searchcomment.php"
+		class="am-topbar-form am-topbar-left am-form-inline am-topbar-right" role="search">
+      <div class="am-form-group">
+        <input class="am-form-field am-input-sm" placeholder="搜索评论" type="text" name="username">
+      </div>
+      <button type="submit" class="am-btn am-btn-default am-btn-sm">搜索</button>
+    </form>
 
   </div>
 </header>
@@ -115,8 +122,10 @@
 	//数据库连接
 	$conn=create_();
 	//得到总页数
-	$sql="SELECT COUNT(*) AS count FROM ".CANTEEN_TABLE."";
+	$sql="SELECT COUNT(*) AS count FROM ".COMMENT_TABLE."";
 	$r = Query($conn,$sql)->fetch_assoc();
+	//$num = $r['count'];
+	//echo $num.'/n';
 	$total_page = ceil($r['count']/QUAN);
 	//判断页面正确性
 	if($page > $total_page || $page < 1)
@@ -126,7 +135,7 @@
 	}
 	
 	//获取表格数据
-	$sql="SELECT canteen_id,canteen_name FROM ".CANTEEN_TABLE." ORDER BY canteen_id desc LIMIT $begin,".QUAN."";
+	$sql="SELECT comment_id,dish_id,user_id,content FROM ".COMMENT_TABLE." ORDER BY comment_id desc LIMIT $begin,".QUAN."";
 	$figure = Query($conn,$sql);
     
     /*****这是表头****/
@@ -136,7 +145,10 @@
 		<thead>
 			<tr>
 				<th>ID</th>
-				<th>食堂名称</th>
+				<th>菜品ID</th>
+				<th>菜品名称</th>
+				<th>作者ID</th>
+				<th>作者名称</th>
 				<th>操作</th>
 			</tr>
 		</thead>
@@ -145,24 +157,48 @@
 EOT;
     /****这是表身，循环输出****/
 	//$id = $begin;//第几个
-	$canteenname;
-	$real_id;
+	$dishId;
+	$userId;
+	$realId;
+	$content;
 	while($row = $figure->fetch_assoc())
 	{
-		$real_id = $row["canteen_id"];
-		$canteenname = $row["canteen_name"];
+		$dishId = $row["dish_id"];
+		$userId = $row["user_id"];
+		$realId = $row["comment_id"];
+		$content = $row["content"];
+		
+		$sql="SELECT dish_name FROM ".DISH_TABLE." where dish_id=$dishId ";
+		$dishName = "不存在的菜品";
+		$dishFigure = $conn->query($sql);
+		if ($dishFigure->num_rows > 0) {
+			$dishRow = $dishFigure->fetch_assoc();
+			$dishName = $dishRow["dish_name"];
+		} 
+		
+		$sql="SELECT username FROM ".USR_TABLE." where id=$userId ";
+		$userFigure = $conn->query($sql);
+		$userName = "不存在的用户";
+		if($userFigure->num_rows > 0)
+		{
+			$userRow = $userFigure->fetch_assoc();
+			$userName = $userRow["username"];
+		}
 		
 		echo <<<EOT
 			<tr>
-				<td> $real_id </td>
-				<td><a href="#"> $canteenname </a></td>
+				<td> $realId </td>
+				<td> $dishId </td>
+				<td> $dishName </td>
+				<td> $userId </td>
+				<td> $userName </td>
 				<td>
-					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($real_id)">删除</span>
+					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($realId)">删除</span>
+					<span class="am-btn am-btn-success am-btn-xs" onclick="alert('$content')">浏览内容</span>
 				</td>
-			</tr>
-		
+			</tr>		
 EOT;
-        //$id++;
+        
 	}
 	
 	$conn->close();
@@ -174,7 +210,7 @@ EOT;
 		
 		<footer class="blog-footer">
 		  <p>
-		  <form action="canteeninfo.php" method="get" class="am-form-horizontal am-form-inline">
+		  <form action="commentinfo.php" method="get" class="am-form-horizontal am-form-inline">
 			<div class="am-form-group">
 				<input class="am-form-field am-input-sm am-u-sm-3" placeholder="页数" type="text" name="Page" >
 				<button type="submit" class="am-btn am-btn-default am-btn-sm">转到</button>
@@ -183,9 +219,9 @@ EOT;
 		  <br>
 			<small>
 				<ul class="am-pagination"  style="text-align:center;" >
-					<li><a href="canteeninfo.php?Page=$prev_page">&laquo; Prev</a></li>
+					<li><a href="commentinfo.php?Page=$prev_page">&laquo; Prev</a></li>
 					第 $page 页 共 $total_page 页
-					<li><a href="canteeninfo.php?Page=$next_page">Next &raquo;</a></li>
+					<li><a href="commentinfo.php?Page=$next_page">Next &raquo;</a></li>
 				</ul>
 			</small>
 		  </p>
@@ -198,28 +234,28 @@ EOT;
 function deletePost(value){
 	
 	let JSONobj = {
-				"canteenID":	value
+				"id":	value
 			}
 			
-	let canteenInfo = JSON.stringify(JSONobj);
-	alert(canteenInfo);
+	let userInfo = JSON.stringify(JSONobj);
+	//alert(userInfo);
 	
-	 $.post("/PHP/canteen/deleteCanteen.php", canteenInfo ,
+	 $.post("/PHP/user/deleteUser.php", userInfo ,
 		function(data,status){
 		
-		let stat = data["Status"];
+		let stat = data["status"];
 		
 		if(stat == 0)
 			alert('success');
-		else 
-			alert(data['errMag']);
+		else if(stat == 1)
+			alert('no such user');
+		else if(stat == 2)
+			alert('no power');
 		
 		location.reload(true); 
 			
 	});
 };
-
-
 </script>
 
 

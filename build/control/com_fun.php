@@ -4,7 +4,6 @@
 	
 	function check_log($_UserManager)
 	{	
-		//var_dump($_UserManager);
 		if (!$_UserManager->isAdmin())
 		{
 			header('Location: '.'/control/login.php');
@@ -41,7 +40,7 @@ function Query($conn,$sql)
 		return $result;
 	} 
 	else {
-		die("无结果");
+		echo "query 无结果";
 	}
 }
 ?> 

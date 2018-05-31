@@ -194,9 +194,9 @@ EOT;
 		  <br>
 			<small>
 				<ul class="am-pagination"  style="text-align:center;" >
-					<li><a href="usrinfo.php?Page=$prev_page&username=$username">&laquo; Prev</a></li>
+					<li><a href="searchuser.php?Page=$prev_page&username=$username">&laquo; Prev</a></li>
 					第 $page 页 共 $total_page 页
-					<li><a href="usrinfo.php?Page=$next_page&username=$username">Next &raquo;</a></li>
+					<li><a href="searchuser.php?Page=$next_page&username=$username">Next &raquo;</a></li>
 				</ul>
 			</small>
 		  </p>

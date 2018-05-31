@@ -99,10 +99,13 @@
 						<td> <a href="canteen/canteeninfo.php" target="_blank"> 食堂管理 </a> </td>
 					</tr>
 					<tr>
-						<td> 菜品管理 </td>
+						<td> <a href="dish/dishinfo.php" target="_blank"> 菜品管理 </a> </td>
 					</tr>
 					<tr>
-						<td> 评价管理 </td>
+						<td> <a href="comment/commentinfo.php" target="_blank"> 评论管理 </a> </td>
+					</tr>
+					<tr>
+						<td> <a href="tag/taginfo.php" target="_blank"> 标签管理 </a> </td>
 					</tr>
 				</tbody>
 		</table>

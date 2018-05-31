@@ -11,7 +11,7 @@
 <html class="js cssanimations"><head lang="en">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
-  <title>管理食堂</title>
+  <title>管理标签</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no">
@@ -81,7 +81,7 @@
 
 <header class="am-topbar">
   <h1 class="am-topbar-brand">
-    <a href="#">食堂管理</a>
+    <a href="#">标签管理</a>
   </h1>
 
   <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#doc-topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span class="am-icon-bars"></span></button>
@@ -89,7 +89,7 @@
   <div class="am-collapse am-topbar-collapse" id="doc-topbar-collapse">
   
 	<ul class="am-nav am-nav-pills am-topbar-nav">
-		<li class><a href="addcanteen.php">增加</a></li>
+		<li class><a href="addtag.php">增加</a></li>
 		<li class><a href="../index.php">首页</a></li>
     </ul>
 
@@ -115,7 +115,7 @@
 	//数据库连接
 	$conn=create_();
 	//得到总页数
-	$sql="SELECT COUNT(*) AS count FROM ".CANTEEN_TABLE."";
+	$sql="SELECT COUNT(*) AS count FROM ".TAG_TABLE."";
 	$r = Query($conn,$sql)->fetch_assoc();
 	$total_page = ceil($r['count']/QUAN);
 	//判断页面正确性
@@ -126,7 +126,7 @@
 	}
 	
 	//获取表格数据
-	$sql="SELECT canteen_id,canteen_name FROM ".CANTEEN_TABLE." ORDER BY canteen_id desc LIMIT $begin,".QUAN."";
+	$sql="SELECT tag_id,tag_name FROM ".TAG_TABLE." ORDER BY tag_id desc LIMIT $begin,".QUAN."";
 	$figure = Query($conn,$sql);
     
     /*****这是表头****/
@@ -145,17 +145,17 @@
 EOT;
     /****这是表身，循环输出****/
 	//$id = $begin;//第几个
-	$canteenname;
+	$tagName;
 	$real_id;
 	while($row = $figure->fetch_assoc())
 	{
-		$real_id = $row["canteen_id"];
-		$canteenname = $row["canteen_name"];
+		$real_id = $row["tag_id"];
+		$tagName = $row["tag_name"];
 		
 		echo <<<EOT
 			<tr>
 				<td> $real_id </td>
-				<td><a href="#"> $canteenname </a></td>
+				<td><a href="#"> $tagName </a></td>
 				<td>
 					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($real_id)">删除</span>
 				</td>
@@ -174,7 +174,7 @@ EOT;
 		
 		<footer class="blog-footer">
 		  <p>
-		  <form action="canteeninfo.php" method="get" class="am-form-horizontal am-form-inline">
+		  <form action="taginfo.php" method="get" class="am-form-horizontal am-form-inline">
 			<div class="am-form-group">
 				<input class="am-form-field am-input-sm am-u-sm-3" placeholder="页数" type="text" name="Page" >
 				<button type="submit" class="am-btn am-btn-default am-btn-sm">转到</button>
@@ -183,9 +183,9 @@ EOT;
 		  <br>
 			<small>
 				<ul class="am-pagination"  style="text-align:center;" >
-					<li><a href="canteeninfo.php?Page=$prev_page">&laquo; Prev</a></li>
+					<li><a href="taginfo.php?Page=$prev_page">&laquo; Prev</a></li>
 					第 $page 页 共 $total_page 页
-					<li><a href="canteeninfo.php?Page=$next_page">Next &raquo;</a></li>
+					<li><a href="taginfo.php?Page=$next_page">Next &raquo;</a></li>
 				</ul>
 			</small>
 		  </p>
@@ -198,13 +198,13 @@ EOT;
 function deletePost(value){
 	
 	let JSONobj = {
-				"canteenID":	value
+				"tagId":	value
 			}
 			
-	let canteenInfo = JSON.stringify(JSONobj);
-	alert(canteenInfo);
+	let tagInfo = JSON.stringify(JSONobj);
+	//alert(tagInfo);
 	
-	 $.post("/PHP/canteen/deleteCanteen.php", canteenInfo ,
+	 $.post("/PHP/tag/deleteTag.php", tagInfo ,
 		function(data,status){
 		
 		let stat = data["Status"];
@@ -212,7 +212,7 @@ function deletePost(value){
 		if(stat == 0)
 			alert('success');
 		else 
-			alert(data['errMag']);
+			alert(data['errMsg']);
 		
 		location.reload(true); 
 			
