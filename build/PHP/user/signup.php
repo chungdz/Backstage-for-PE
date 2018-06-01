@@ -41,26 +41,24 @@ if($pwd==''){
 	exit;
 }
 
-$pattern = "/^[0-9a-zA-Z_]{1,}$/";
-if(preg_match($pattern, $name) != 1){
+$namePattern = "/^[0-9a-zA-Z_]{1,}$/";
+if(preg_match($namePattern, $name) != 1){
 	$response->handleError('用户名只能为数字、字母、下划线');
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
 }
-if(preg_match($pattern, $pwd) != 1){
-	$response->handleError('密码只能为数字、字母、下划线');
-	$response->setResponse('signupStatus', DEFAULT_ERRNO);
-	$response->printResponseJson();
-	exit;
-}
+
 if(strlen($name) < 6 || 16 < strlen($name)){
 	$response->handleError('用户名长度应为6至16个字符');
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
+	exit;
 }
-if(strlen($pwd) < 6 || 16 < strlen($pwd)){
-	$response->handleError('密码长度应为6至16个字符');
+
+$pwdPattern = "/^[a-fA-F0-9]{32}$/";
+if(preg_match($pwdPattern, $pwd) != 1){
+	$response->handleError($pwd.'不是合法的MD5字符串');
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
