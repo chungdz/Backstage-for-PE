@@ -33,7 +33,7 @@ class UserManager {
 	function login($id, $userId, $isAdmin) {
 		if(!isset($_SESSION))
 			return FALSE;
-		$_SESSION['user_id'] = $id;
+		$_SESSION['userId'] = $id;
 		$_SESSION['username'] = $userId;
 		$_SESSION['isAdmin'] = $isAdmin;
 		return TRUE;
@@ -41,8 +41,8 @@ class UserManager {
 	function logout() {
 		if(!isset($_SESSION))
 			return FALSE;
-		if(isset($_SESSION['user_id'], $_SESSION['username'])){
-			unset($_SESSION['user_id']);
+		if(isset($_SESSION['userId'], $_SESSION['username'])){
+			unset($_SESSION['userId']);
 			unset($_SESSION['username']);
 			unset($_SESSION['isAdmin']);
 			return TRUE;
@@ -57,7 +57,7 @@ class UserManager {
 		return $_SESSION['isAdmin'];
 	}
 	function getId() {
-		return $_SESSION['user_id'];
+		return $_SESSION['userId'];
 	}
 	function getUsername() {
 		return $_SESSION['username'];
