@@ -41,16 +41,9 @@ if($pwd==''){
 	exit;
 }
 
-$namePattern = "/^[0-9a-zA-Z_]{1,}$/";
+$namePattern = "/^[0-9a-zA-Z_]{6,16}$/";
 if(preg_match($namePattern, $name) != 1){
-	$response->handleError('用户名只能为数字、字母、下划线');
-	$response->setResponse('signupStatus', DEFAULT_ERRNO);
-	$response->printResponseJson();
-	exit;
-}
-
-if(strlen($name) < 6 || 16 < strlen($name)){
-	$response->handleError('用户名长度应为6至16个字符');
+	$response->handleError($name.'不是由6至16位的数字、字母或下划线组成的合法用户名');
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
