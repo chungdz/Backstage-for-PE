@@ -19,10 +19,13 @@ class MysqlCheck {
 	function __construct($mysql) {
 		$this->mysql = $mysql;
 	}
-	function checkExist($k, $v) {
+	function checkExist($k, $v, $vint = TRUE) {
 		$query = "SELECT COUNT(*) FROM users WHERE ".$k." = ?";
 		$stmt = $this->mysql->prepare($query);
-		$stmt->bind_param('i', $v);
+		if($vint)
+			$stmt->bind_param('i', $v);
+		else
+			$stmt->bind_param('s', $v);
 		$stmt->execute();
 		if($stmt->errno) {
 			$this->errno = $stmt->errno;
