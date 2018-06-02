@@ -37,7 +37,7 @@ class MysqlCheck {
 			$stmt->fetch();
 			if($cnt != 1) {
 				$this->errno = 1;
-				$this->error = $k.': '.$v.' not exists.';
+				$this->error = $k.': '.$v.' does not exist.';
 				return $this->errno;
 			}
 		}

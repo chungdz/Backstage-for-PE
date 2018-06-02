@@ -30,11 +30,11 @@ class UserManager {
 	function getPost() {
 		return $this->post;
 	}
-	function login($id, $userId, $isAdmin) {
+	function login($userId, $username, $isAdmin) {
 		if(!isset($_SESSION))
 			return FALSE;
-		$_SESSION['userId'] = $id;
-		$_SESSION['username'] = $userId;
+		$_SESSION['userId'] = $userId;
+		$_SESSION['username'] = $username;
 		$_SESSION['isAdmin'] = $isAdmin;
 		return TRUE;
 	}
@@ -57,9 +57,13 @@ class UserManager {
 		return $_SESSION['isAdmin'];
 	}
 	function getId() {
+		if(!isset($_SESSION) || !isset($_SESSION['userId']))
+			return NULL;
 		return $_SESSION['userId'];
 	}
 	function getUsername() {
+		if(!isset($_SESSION) || !isset($_SESSION['username']))
+			return NULL;
 		return $_SESSION['username'];
 	}
 	/**

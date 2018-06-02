@@ -15,13 +15,13 @@ $pwd=$json['password'];
 // $name = "testname";
 // $pwd = "testpwd";
 
-if($name==''){
+if($name=='') {
 	$response->handleError('用户名不能为空');
 	$response->setResponse('loginStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
 }
-if($pwd==''){
+if($pwd=='') {
 	$response->handleError('密码不能为空');
 	$response->setResponse('loginStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();
