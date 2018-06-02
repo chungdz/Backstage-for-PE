@@ -73,13 +73,13 @@ class UserManager {
 
 		$query = "SELECT password FROM users WHERE username= ?";
 		$stmt = $this->mysql->prepare($query);
-		$stmt->bind_param('s',$username);
+		$stmt->bind_param('s', $username);
 		$stmt->execute();
 		$stmt->bind_result($mysql_pwd);
 
 		if($stmt->fetch()) {
-			if($pwd != $mysql_pwd) {
-				return FALSE;
+			if($pwd == $mysql_pwd) {
+				return TRUE;
 			}
 		}
 		// Username does not exist or password is wrong.
