@@ -56,8 +56,7 @@ if(strlen($name) < 6 || 16 < strlen($name)){
 	exit;
 }
 
-$pwdPattern = "/^[a-fA-F0-9]{32}$/";
-if(preg_match($pwdPattern, $pwd) != 1){
+if(!IsMd5($pwd)) {
 	$response->handleError($pwd.'不是合法的MD5字符串');
 	$response->setResponse('signupStatus', DEFAULT_ERRNO);
 	$response->printResponseJson();

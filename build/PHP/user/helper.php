@@ -4,6 +4,14 @@ function StmtToErrMsg($stmt) {
 	return 'Errno: '.$stmt->errno.' Error: '.$stmt->error;
 }
 
+function IsMd5($str) {
+	$md5Pattern = "/^[a-fA-F0-9]{32}$/";
+	if(preg_match($md5Pattern, $str) != 1) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
 class MysqlCheck {
 	private $mysql;
 	public $errno = 0;
