@@ -34,16 +34,16 @@ if($mysqlCheck->errno) {
 	exit;
 }
 
-$deleteQuery = "DELETE FROM users WHERE id = ?";
+$deleteQuery = "UPDATE users SET deleted=true WHERE id = ?";
 $stmt = $mysql->prepare($deleteQuery);
 $stmt->bind_param('i', $id);
 $stmt->execute();
-if($stmt->errno){
+if($stmt->errno) {
 	$response->handleError($StmtToErrMsg($stmt));
 	$response->setResponse('status', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
-}else {
+} else {
 	// 删除成功
 	$response->setResponse('status', DEL_USER_STATUS_SUCCESS);
 	$response->printResponseJson();

@@ -46,7 +46,7 @@ if(!$_UserManager->checkPassword($pwd, $name)) {
 }
 
 // 获取用户ID和权限
-$selectQuery = "SELECT id, isAdmin FROM users WHERE username= ?";
+$selectQuery = "SELECT id, isAdmin FROM users WHERE username= ? AND deleted=false";
 $stmt = $mysql->prepare($selectQuery);
 $stmt->bind_param('s',$name);
 $stmt->execute();
@@ -68,8 +68,9 @@ if($stmt->fetch()) {
 }
 // 以下内容不应该被执行，因为已检查过用户名存在。
 // 保留以下内容以防万一。
+// 以下代码在尝试登录已被删除的用户时会被调用
 else {
-	$response->handleError('用户'.$name.'不存在');
+	$response->handleError('用户'.$name.'已被删除');
 	$response->setResponse('loginStatus', LOGIN_STATUS_FAILURE);
 	$response->printResponseJson();
 	exit;

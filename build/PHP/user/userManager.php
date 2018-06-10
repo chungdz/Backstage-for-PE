@@ -20,6 +20,8 @@ class UserManager {
 			$this->sess = $_SESSION;
 		if(isset($_SERVER))
 			$this->serv = $_SERVER;
+		// Modify session to update session lifetime
+		$_SESSION['lastAccess'] = time();
 	}
 	function getMysql() {
 		return $this->mysql;
