@@ -19,7 +19,18 @@ $json = $_UserManager->getJson();
  *	}
  * @return json
  *	{
- *	
+ *   "status": 0/1
+ *   "dishNum"（菜品数量）:xx
+ *   "dishList":一个json数组，数组元素是
+ *		{
+ *		dishID: xxx,
+ *		canteenID: xxx, 
+ *		dishName: xxx, 
+ *		photo: url, 
+ *		userID:xxx, 
+ *		rating:xxx, 
+ *		userName: xxx
+ *		}
  *	}
  *
  */
@@ -61,13 +72,70 @@ while($selectStmt->fetch()) {
 }
 $selectStmt->close();
 
-// Predict user's preference
-$result = $slopeOne->predict($userPref);
+if(empty($userPref)) {	// 用户从未评过分，返回菜品平均值
+	$selectQuery = "SELECT dish_id, AVG(value) AS value FROM ratings GROUP BY dish_id";
+	$selectStmt = $mysql->prepare($selectQuery);
+	$selectStmt->execute();
+	$selectStmt->bind_result($dishId, $value);
+	while($selectStmt->fetch()) {
+	  $result[$dishId] = round ($value, 2);
+	}
+	$selectStmt->close();
+} else {	// 用户曾经评过分，使用Slope One推荐
+	// Predict user's preference
+	$result = $slopeOne->predict($userPref);
+}
 
-var_dump($result);
-// 修改成功
-// $response->setResponse('status', 0);
-// $response->printResponseJson();
-// exit;
+arsort($result);
+$result = array_slice($result, 0, 10, TRUE);
+
+
+/**
+ * @return array d
+ *		dishID: xxx,
+ *		canteenID: xxx, 
+ *		dishName: xxx, 
+ *		photo: url, 
+ *		userID:xxx, 
+ *		rating:xxx, 
+ *		userName: xxx
+ */
+function queryDish($mysql, $dishId) {
+	$query = "SELECT dishes.dish_id,
+		dishes.canteen_id, 
+		dishes.dish_name, 
+		dishes.dish_pic,
+		dishes.user_id,
+		AVG(ratings.value),
+		users.username FROM dishes, users, ratings WHERE dishes.dish_id=?
+		AND (dishes.user_id=users.id OR dishes.user_id IS NULL)
+		AND dishes.dish_id=ratings.dish_id";
+	$stmt = $mysql->prepare($query);
+	$stmt->bind_param('i', $dishId);
+	$stmt->execute();
+	$stmt->bind_result($d['dishID'], $d['canteenID'], $d['dishName'], 
+		$d['photo'], $d['userID'], $d['rating'], $d['userName']);
+	echo $dishId."\n";
+	$stmt->fetch();
+	$stmt->close();
+	if(!$d['rating'])
+		$d['rating'] = -1;
+	if(!$d['userID'])
+		$d['userID'] = "已注销用户";
+	return $d;
+}
+
+$dishList = [];
+
+foreach ($result as $key => $value) {
+	echo $key.': '.$value."\n";
+	$dishList[] = queryDish($mysql, $key);
+}
+
+$response->setResponse('status', 0);
+$response->setResponse('dishNum', count($dishList));
+$response->setResponse('dishList', array_values($dishList));
+$response->printResponseJson();
+exit;
 
 ?>
