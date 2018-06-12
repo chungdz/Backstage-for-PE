@@ -16,12 +16,21 @@ class UserManager {
 				$this->json = NULL;
 			}
 		}
-		if(isset($_SESSION))
-			$this->sess = $_SESSION;
+
 		if(isset($_SERVER))
 			$this->serv = $_SERVER;
 		// Modify session to update session lifetime
-		$_SESSION['lastAccess'] = time();
+		
+	}
+	function initSess() {
+		if(isset($this->json['token'])) {
+			session_id($this->json['token']);
+			session_start();
+		}
+		if(isset($_SESSION)) {
+			$this->sess = $_SESSION;
+			$_SESSION['lastAccess'] = time();
+		}
 	}
 	function getMysql() {
 		return $this->mysql;
@@ -34,7 +43,7 @@ class UserManager {
 	}
 	function login($userId, $username, $isAdmin) {
 		if(!isset($_SESSION))
-			return FALSE;
+			session_start();
 		$_SESSION['userId'] = $userId;
 		$_SESSION['username'] = $username;
 		$_SESSION['isAdmin'] = $isAdmin;
@@ -68,6 +77,12 @@ class UserManager {
 			return NULL;
 		return $_SESSION['username'];
 	}
+	function getToken() {
+		if(isset($_SESSION))
+			return session_id();
+		else
+			return NULL;
+	}
 	/**
 	 * @param string $pwd 密码
 	 * @param string $username 用户名，如果不提供则使用_SESSION['username']
@@ -92,6 +107,7 @@ class UserManager {
 		return FALSE;
 	}
 }
-session_start();
+
 $_UserManager = new UserManager();
+$_UserManager->initSess();
 ?>

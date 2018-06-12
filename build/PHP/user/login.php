@@ -54,6 +54,7 @@ $stmt->bind_result($userID, $isAdmin);
 
 if($stmt->fetch()) {
 	if($_UserManager->login($userID, $name, $isAdmin)) {
+		$response->setResponse('token', $_UserManager->getToken());
 		$response->setResponse('loginStatus', LOGIN_STATUS_SUCCESS);
 		$response->setResponse('userID', $userID);
 		$response->printResponseJson();
