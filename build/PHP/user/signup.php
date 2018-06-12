@@ -12,12 +12,9 @@ $mysqlCheck = new MysqlCheck($mysql);
 $json = $_UserManager->getJson();
 $name = $json['userName'];
 $pwd = $json['password'];
-if(isset($json['mobile']) && $json['mobile'] != '')
-	$mobile = $json['mobile'];
 
 // $name = "testname";
 // $pwd = "testpwd";
-// $mobile = "12345678910";
 
 if(isset($json['isAdmin'])) {
 	if(!$_UserManager->isAdmin()) {
@@ -64,19 +61,9 @@ if($mysqlCheck->errno) {
 	exit;
 }
 
-if(isset($mobile)) {
-	$mysqlCheck->checkUnique('mobile', $mobile);
-	if($mysqlCheck->errno) {
-		$response->handleError($mysqlCheck->error);
-		$response->setResponse('signupStatus', SIGNUP_STATUS_MOBILE_EXISTS);
-		$response->printResponseJson();
-		exit;
-	}
-}
-
-$insertQuery = "INSERT INTO users(username,password,mobile)VALUES(?, ?, ?)";
+$insertQuery = "INSERT INTO users(username,password)VALUES(?, ?)";
 $stmt = $mysql->prepare($insertQuery);
-$stmt->bind_param('sss', $name, $pwd, $mobile);
+$stmt->bind_param('ss', $name, $pwd);
 $stmt->execute();
 if($stmt->errno){
 	$response->handleError($StmtToErrMsg($stmt));
