@@ -10,7 +10,7 @@ $mysql = $_UserManager->getMysql();
 $mysqlCheck = new MysqlCheck($mysql);
 
 $json = $_UserManager->getJson();
-$phone = $json['phone'];
+$mobile = $json['mobile'];
 $code = $json['code'];
 
 $userId = $_UserManager->getId();
@@ -21,30 +21,38 @@ if(!$userId) {
     exit;
 }
 
-$response = verifyCode($phone, $code);
-$status = $response['status'];
-$error = $response['error'];
+$mysqlCheck->checkUnique('mobile', $mobile);
+if($mysqlCheck->errno) {
+    $response->handleError($mysqlCheck->error);
+    $response->setResponse('status', PHONE_VERIFY_STATUS_MOBILE_EXISTS);
+    $response->printResponseJson();
+    exit;
+}
+
+$info = verifyCode($mobile, $code);
+$status = $info['status'];
+$error = $info['error'];
 switch ($status) {
     case 200:
-        $updateQuery = "UPDATE users SET phone=? WHERE id=?";
+        $updateQuery = "UPDATE users SET mobile=? WHERE id=?";
         $stmt = $mysql->prepare($updateQuery);
-        $stmt->bind_param('si', $phone, $userId);
+        $stmt->bind_param('si', $mobile, $userId);
         $stmt->execute();
         if($stmt->errno) {
             $response->handleError($StmtToErrMsg($stmt));
-            $response->setResponse('status', 1);
+            $response->setResponse('status', PHONE_VERIFY_STATUS_FAILURE);
             $response->printResponseJson();
             exit;
         }
         // 手机绑定成功
-        $response->setResponse('status', 0);
+        $response->setResponse('status', PHONE_VERIFY_STATUS_SUCCESS);
         $response->printResponseJson();
         exit;
         break;
     
     default:
         $response->handleError($status.': '.$error);
-        $response->setResponse('status', 1);
+        $response->setResponse('status', PHONE_VERIFY_STATUS_FAILURE);
         $response->printResponseJson();
         exit;
         break;
