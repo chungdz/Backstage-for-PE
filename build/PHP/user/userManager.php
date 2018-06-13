@@ -27,6 +27,9 @@ class UserManager {
 			session_id($this->json['token']);
 			session_start();
 		}
+		if(isset($_COOKIE['PHPSESSID']) && !isset($_SESSION)) {
+			session_start();
+		}
 		if(isset($_SESSION)) {
 			$this->sess = $_SESSION;
 			$_SESSION['lastAccess'] = time();
