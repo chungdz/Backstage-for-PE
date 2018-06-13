@@ -33,8 +33,22 @@ if($mysqlCheck->errno) {
 	$response->printResponseJson();
 	exit;
 }
+// 检查是否已被删除
+$queryDeleted = "SELECT deleted FROM users WHERE id=?";
+$stmt = $mysql->prepare($queryDeleted);
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$stmt->bind_result($deleted);
+$stmt->fetch();
+if($deleted) {
+	$response->handleError("重复删除");
+	$response->setResponse('status', DEL_USER_STATUS_ID_NOT_EXISTS);
+	$response->printResponseJson();
+	exit;
+}
+$stmt->close();
 
-$deleteQuery = "UPDATE users SET deleted=true WHERE id = ?";
+$deleteQuery = "UPDATE users SET deleted=true, mobile=CONCAT(id,':', mobile), username=CONCAT('已注销',':', username, ':',id) WHERE id = ?";
 $stmt = $mysql->prepare($deleteQuery);
 $stmt->bind_param('i', $id);
 $stmt->execute();
@@ -43,10 +57,11 @@ if($stmt->errno) {
 	$response->setResponse('status', DEFAULT_ERRNO);
 	$response->printResponseJson();
 	exit;
-} else {
-	// 删除成功
-	$response->setResponse('status', DEL_USER_STATUS_SUCCESS);
-	$response->printResponseJson();
-	exit;
 }
+$stmt->close();
+
+// 删除成功
+$response->setResponse('status', DEL_USER_STATUS_SUCCESS);
+$response->printResponseJson();
+exit;
 ?>
