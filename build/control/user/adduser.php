@@ -74,6 +74,9 @@
   
 <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>  
+<script src="http://cdn.bootcss.com/blueimp-md5/1.1.0/js/md5.js"></script>
+<script src="../bin/jsencrypt.min.js"></script>
+<script src="../bin/encode.js"></script>
 </head>
 <body>
 
@@ -109,7 +112,7 @@
 				</select>
 			</div>
 			
-			<div class="am-form-group">
+			<div class="am-form-group" style="display:none">
 			  <label for="doc-ta-1">手机</label>
 			  <textarea class="" rows="1" name="mobile" id="phone"/></textarea>
 			</div>
@@ -127,18 +130,22 @@ $(function(){
 		let power = $("#power").val();
 		let phone = $("#phone").val();
 		
+		let Md5Pwd = md5(pwd);
+		//alert(Md5Pwd);
+		
 		if(usr == '' || pwd == '' || power == '')
 			alert("请输入完整信息！");
 		else
 		{
 			let JSONobj = {
 				"userName":	usr,
-				"password":	pwd,
+				"password":	Md5Pwd,
 				"isAdmin":	power,
 				"mobile":	phone
 			}
 			
 			let userInfo = JSON.stringify(JSONobj);
+			userInfo = encode(userInfo);
 			//alert(userInfo);
 			
 			 $.post("/PHP/user/signup.php", userInfo ,
@@ -149,9 +156,9 @@ $(function(){
 					if(stat == 0)
 						alert('success');
 					else if(stat == 1)
-						alert('username already signed');
-					else if(stat == 2)
-						alert('phone number already signed');
+						alert('Name already exists');
+					else	
+						alert(data["errMsg"]);
 					
 					location.reload(true); 
 						

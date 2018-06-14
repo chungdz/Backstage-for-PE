@@ -76,6 +76,8 @@
   
   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
+  <script src="../bin/jsencrypt.min.js"></script>
+  <script src="../bin/encode.js"></script>
 </head>
 <body>
 
@@ -95,7 +97,7 @@
     <form method="get" action="searchdish.php"
 		class="am-topbar-form am-topbar-left am-form-inline am-topbar-right" role="search">
       <div class="am-form-group">
-        <input class="am-form-field am-input-sm" placeholder="搜索菜品" type="text" name="username">
+        <input class="am-form-field am-input-sm" placeholder="搜索菜品" type="text" name="dishname">
       </div>
       <button type="submit" class="am-btn am-btn-default am-btn-sm">搜索</button>
     </form>
@@ -179,6 +181,10 @@ EOT;
 				<td> $canteenName </td>
 				<td>
 					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($realId)">删除</span>
+					<a href="../comment/dishsearch.php?Id=$realId" target="_blank" 
+					class="am-btn am-btn-warning am-btn-xs">
+					 查看评论
+					</a>
 				</td>
 			</tr>
 		
@@ -219,30 +225,27 @@ EOT;
 function deletePost(value){
 	
 	let JSONobj = {
-				"id":	value
+				"dishID":	value
 			}
 			
-	let userInfo = JSON.stringify(JSONobj);
-	//alert(userInfo);
+	let Info = JSON.stringify(JSONobj);
+	Info = encode(Info);
+	//alert(Info);
 	
-	 $.post("/PHP/user/deleteUser.php", userInfo ,
+	 $.post("/PHP/dish/deleteDish.php", Info ,
 		function(data,status){
 		
-		let stat = data["status"];
+		let stat = data["Status"];
 		
 		if(stat == 0)
 			alert('success');
-		else if(stat == 1)
-			alert('no such user');
-		else if(stat == 2)
-			alert('no power');
+		else 
+			alert(data['errMsg']);
 		
 		location.reload(true); 
 			
 	});
 };
-
-
 </script>
 
 

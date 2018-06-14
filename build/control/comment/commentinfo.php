@@ -76,6 +76,8 @@
   
   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
+  <script src="../bin/jsencrypt.min.js"></script>
+  <script src="../bin/encode.js"></script>
 </head>
 <body>
 
@@ -92,13 +94,13 @@
 		<li class><a href="../index.php">首页</a></li>
     </ul>
 	
-    <form method="get" action="searchcomment.php"
+    <!--form method="get" action="searchcomment.php"
 		class="am-topbar-form am-topbar-left am-form-inline am-topbar-right" role="search">
       <div class="am-form-group">
         <input class="am-form-field am-input-sm" placeholder="搜索评论" type="text" name="username">
       </div>
       <button type="submit" class="am-btn am-btn-default am-btn-sm">搜索</button>
-    </form>
+    </form-->
 
   </div>
 </header>
@@ -237,10 +239,11 @@ function deletePost(value){
 				"id":	value
 			}
 			
-	let userInfo = JSON.stringify(JSONobj);
+	let Info = JSON.stringify(JSONobj);
+	Info = encode(Info);
 	//alert(userInfo);
 	
-	 $.post("/PHP/user/deleteUser.php", userInfo ,
+	 $.post("/PHP/comment/deleteComment.php", Info ,
 		function(data,status){
 		
 		let stat = data["status"];

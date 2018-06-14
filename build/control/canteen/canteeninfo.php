@@ -76,6 +76,8 @@
   
   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
+  <script src="../bin/jsencrypt.min.js"></script>
+  <script src="../bin/encode.js"></script>
 </head>
 <body>
 
@@ -202,7 +204,8 @@ function deletePost(value){
 			}
 			
 	let canteenInfo = JSON.stringify(JSONobj);
-	alert(canteenInfo);
+	canteenInfo = encode(canteenInfo);
+	//alert(canteenInfo);
 	
 	 $.post("/PHP/canteen/deleteCanteen.php", canteenInfo ,
 		function(data,status){

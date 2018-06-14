@@ -77,10 +77,12 @@
 
 <script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
+<script src="../bin/jsencrypt.min.js"></script>
+<script src="../bin/encode.js"></script>
 
 <header class="am-topbar">
   <h1 class="am-topbar-brand">
-    <a href="usrinfo.php">用户管理</a>
+    <a href="usrinfo.php">搜索结果</a>
   </h1>
 
   <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#doc-topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span class="am-icon-bars"></span></button>
@@ -95,7 +97,7 @@
     <form method="get" action="searchuser.php" 
 		class="am-topbar-form am-topbar-left am-form-inline am-topbar-right" role="search">
       <div class="am-form-group">
-        <input class="am-form-field am-input-sm" placeholder="搜索用户" type="text" name="tit">
+        <input class="am-form-field am-input-sm" placeholder="搜索用户" type="text" name="username">
       </div>
       <button type="submit" class="am-btn am-btn-default am-btn-sm">搜索</button>
     </form>
@@ -125,7 +127,7 @@
     //获取表格数据
 	$username = $_GET["username"];
 	//获得总的条数
-	$sql="SELECT COUNT(*) AS count FROM ".USR_TABLE." WHERE username LIKE '%".$username."%'";
+	$sql="SELECT COUNT(*) AS count FROM ".USR_TABLE." WHERE deleted=0 and username LIKE '%".$username."%'";
 	$r = Query($conn,$sql)->fetch_assoc();
 	$total_page = ceil($r['count']/QUAN);
 	//判断页面是否正确
@@ -135,7 +137,7 @@
 		die ("不存在的页面!");
 	}
 	//取表
-	$sql="SELECT id,username,isAdmin FROM ".USR_TABLE." WHERE username LIKE '%".$username."%' 
+	$sql="SELECT id,username,isAdmin FROM ".USR_TABLE." WHERE deleted=0 and username LIKE '%".$username."%' 
 	                                              ORDER BY id desc 
 												  LIMIT $begin,".QUAN."";
 	$figure = Query($conn,$sql);
@@ -170,8 +172,12 @@ EOT;
 				<td> $real_id </td>
 				<td><a href="#"> $username </a></td>
 				<td> $isAdmin </td>
-				<td><a href="update.php?Id=$real_id"><span class="am-badge am-badge-success">编辑</span></a>
-					<a href="delete.php?Id=$real_id&Page=$page"><span class="am-badge am-badge-danger">删除</span></a>
+				<td>
+					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($real_id)">删除</span>
+					<a href="../comment/usersearch.php?Id=$real_id" target="_blank" 
+					class="am-btn am-btn-warning am-btn-xs">
+					 查看评论
+					</a>
 				</td>
 			</tr>
 		
@@ -186,6 +192,9 @@ EOT;
 	<footer class="blog-footer">
 		  <p>
 		  <form action="searchuser.php" method="get" class="am-form-horizontal am-form-inline">
+		    <div class="am-form-gruop">
+				<input type="hidden" name="username" value=$username >
+			</div>
 			<div class="am-form-group">
 				<input class="am-form-field am-input-sm am-u-sm-3" placeholder="页数" type="text" name="Page" >
 				<button type="submit" class="am-btn am-btn-default am-btn-sm">转到</button>
@@ -203,7 +212,36 @@ EOT;
 		</footer>
 EOT;
 ?>
+<script>
+function deletePost(value){
+	
+	let JSONobj = {
+				"id":	value
+			}
+			
+	let userInfo = JSON.stringify(JSONobj);
+	userInfo = encode(userInfo);
+	//alert(userInfo);
+	
+	 $.post("/PHP/user/deleteUser.php", userInfo ,
+		function(data,status){
+		
+		let stat = data["status"];
+		
+		if(stat == 0)
+			alert('success');
+		else if(stat == 1)
+			alert('no such user');
+		else if(stat == 2)
+			alert('no power');
+		
+		location.reload(true); 
+			
+	});
+};
 
+
+</script>
 
 
 </body>

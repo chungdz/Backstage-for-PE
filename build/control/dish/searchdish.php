@@ -6,12 +6,11 @@
 	check_log($_UserManager);
 ?>
 
-
-<!DOCTYPE html>
+<html>
 <html class="js cssanimations"><head lang="en">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
-  <title>管理用户</title>
+  <title>搜索结果</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="format-detection" content="telephone=no">
@@ -73,17 +72,17 @@
       text-align: center;
     }
   </style>
-  
-  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-  <script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
-  <script src="../bin/jsencrypt.min.js"></script>
-  <script src="../bin/encode.js"></script>
 </head>
 <body>
 
+<script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://cdn.amazeui.org/amazeui/2.7.2/js/amazeui.min.js"></script>
+<script src="../bin/jsencrypt.min.js"></script>
+<script src="../bin/encode.js"></script>
+
 <header class="am-topbar">
   <h1 class="am-topbar-brand">
-    <a href="#">用户管理</a>
+    <a href="#">搜索菜品结果</a>
   </h1>
 
   <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-success am-show-sm-only" data-am-collapse="{target: '#doc-topbar-collapse'}"><span class="am-sr-only">导航切换</span> <span class="am-icon-bars"></span></button>
@@ -91,14 +90,14 @@
   <div class="am-collapse am-topbar-collapse" id="doc-topbar-collapse">
   
 	<ul class="am-nav am-nav-pills am-topbar-nav">
-		<li class><a href="adduser.php" target="_blank">增加</a></li>
+		<li class><a href="adduser.php">增加</a></li>
 		<li class><a href="../index.php">首页</a></li>
     </ul>
 	
-    <form method="get" action="searchuser.php" 
+    <form method="get" action="searchdish.php" 
 		class="am-topbar-form am-topbar-left am-form-inline am-topbar-right" role="search">
       <div class="am-form-group">
-        <input class="am-form-field am-input-sm" placeholder="搜索用户" type="text" name="username">
+        <input class="am-form-field am-input-sm" placeholder="搜索菜品" type="text" name="dishname">
       </div>
       <button type="submit" class="am-btn am-btn-default am-btn-sm">搜索</button>
     </form>
@@ -106,10 +105,10 @@
   </div>
 </header>
 
-
 <?php
+	//echo "debug\n"; 
 
-    $page; //第N页，如果没有GET到值，默认第一页
+	$page; //第N页，如果没有GET到值，默认第一页
 	if(array_key_exists('Page',$_GET))
 		$page=$_GET["Page"];
 	else
@@ -121,14 +120,17 @@
 	const QUAN = 10;//一页最多10条记录
 	$next_page = $page + 1;
     $prev_page = $page - 1;	
-	
+
+
 	//数据库连接
 	$conn=create_();
-	//得到总页数
-	$sql="SELECT COUNT(*) AS count FROM ".USR_TABLE." where deleted=0 ";
+    //获取表格数据
+	$dishname = $_GET["dishname"];
+	//获得总的条数
+	$sql="SELECT COUNT(*) AS count FROM ".DISH_TABLE." WHERE dish_name LIKE '%".$dishname."%'";
 	$r = Query($conn,$sql)->fetch_assoc();
 	$total_page = ceil($r['count']/QUAN);
-	//判断页面正确性
+	//判断页面是否正确
 	if($page > $total_page || $page < 1)
 	{
 		$conn->close();
@@ -136,7 +138,8 @@
 	}
 	
 	//获取表格数据
-	$sql="SELECT id,username,isAdmin FROM ".USR_TABLE." where deleted=0 ORDER BY id desc LIMIT $begin,".QUAN."";
+	$sql="SELECT dish_id,dish_name,canteen_id FROM ".DISH_TABLE." where dish_name LIKE '%".$dishname."%'
+	ORDER BY dish_id desc LIMIT $begin,".QUAN."";
 	$figure = Query($conn,$sql);
     
     /*****这是表头****/
@@ -146,8 +149,8 @@
 		<thead>
 			<tr>
 				<th>ID</th>
-				<th>用户名</th>
-				<th>管理员权限</th>
+				<th>菜品名称</th>
+				<th>食堂名称</th>
 				<th>操作</th>
 			</tr>
 		</thead>
@@ -156,23 +159,33 @@
 EOT;
     /****这是表身，循环输出****/
 	//$id = $begin;//第几个
-	$username;
-	$isAdmin;
-	$real_id;
+	$dishName;
+	$canteenId;
+	$realId;
 	while($row = $figure->fetch_assoc())
 	{
-		$real_id = $row["id"];
-		$username = $row["username"];
-		$isAdmin = $row["isAdmin"];
+		$realId = $row["dish_id"];
+		$dishName = $row["dish_name"];
+		$canteenId = $row["canteen_id"];
+		$canteenName = "不存在的餐厅";
+		
+		
+		$sql="SELECT canteen_name FROM ".CANTEEN_TABLE." where canteen_id=$canteenId ";
+		$result = $conn->query($sql);
+		if ($result->num_rows > 0) {
+			$canteenRow = $result->fetch_assoc();
+			$canteenName = $canteenRow['canteen_name'];
+		} 
+		
 		
 		echo <<<EOT
 			<tr>
-				<td> $real_id </td>
-				<td><a href="#"> $username </a></td>
-				<td> $isAdmin </td>
+				<td> $realId </td>
+				<td> $dishName </td>
+				<td> $canteenName </td>
 				<td>
-					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($real_id)">删除</span>
-					<a href="../comment/usersearch.php?Id=$real_id" target="_blank" 
+					<span class="am-btn am-btn-danger am-btn-xs" onclick="deletePost($realId)">删除</span>
+					<a href="../comment/dishsearch.php?Id=$realId" target="_blank" 
 					class="am-btn am-btn-warning am-btn-xs">
 					 查看评论
 					</a>
@@ -184,15 +197,16 @@ EOT;
 	}
 	
 	$conn->close();
-	/****这是页脚，可以转到第N页****/
-		echo <<<EOT
-		
-		</tbody>
-		</table>
-		
-		<footer class="blog-footer">
+	echo <<<EOT
+	</tbody>
+	</table>
+	
+	<footer class="blog-footer">
 		  <p>
-		  <form action="usrinfo.php" method="get" class="am-form-horizontal am-form-inline">
+		  <form action="searchdish.php" method="get" class="am-form-horizontal am-form-inline">
+		    <div class="am-form-gruop">
+				<input type="hidden" name="dishname" value=$dishname >
+			</div>
 			<div class="am-form-group">
 				<input class="am-form-field am-input-sm am-u-sm-3" placeholder="页数" type="text" name="Page" >
 				<button type="submit" class="am-btn am-btn-default am-btn-sm">转到</button>
@@ -201,48 +215,41 @@ EOT;
 		  <br>
 			<small>
 				<ul class="am-pagination"  style="text-align:center;" >
-					<li><a href="usrinfo.php?Page=$prev_page">&laquo; Prev</a></li>
+					<li><a href="searchdish.php?Page=$prev_page&dishname=$dishname">&laquo; Prev</a></li>
 					第 $page 页 共 $total_page 页
-					<li><a href="usrinfo.php?Page=$next_page">Next &raquo;</a></li>
+					<li><a href="searchdish.php?Page=$next_page&dishname=$dishname">Next &raquo;</a></li>
 				</ul>
 			</small>
 		  </p>
 		</footer>
 EOT;
-
 ?>
-
 <script>
 function deletePost(value){
 	
 	let JSONobj = {
-				"id":	value
+				"dishID":	value
 			}
 			
-	let userInfo = JSON.stringify(JSONobj);
-	userInfo = encode(userInfo);
-	//alert(userInfo);
+	let Info = JSON.stringify(JSONobj);
+	Info = encode(Info);
+	//alert(Info);
 	
-	 $.post("/PHP/user/deleteUser.php", userInfo ,
+	 $.post("/PHP/dish/deleteDish.php", Info ,
 		function(data,status){
 		
-		let stat = data["status"];
+		let stat = data["Status"];
 		
 		if(stat == 0)
 			alert('success');
-		else if(stat == 1)
-			alert('no such user');
-		else if(stat == 2)
-			alert('no power');
+		else 
+			alert(data['errMsg']);
 		
 		location.reload(true); 
 			
 	});
 };
-
-
 </script>
-
 
 
 </body>
