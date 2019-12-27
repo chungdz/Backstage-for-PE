@@ -1,15 +1,17 @@
 <?php
-
+include '../rsa.php';
 class UserManager {
 	private $mysql = NULL;
 	private $json = NULL;
 	private $post = NULL;
 	private $sess = NULL;
 	private $serv = NULL;
-	function UserManager() {
+	function UserManager($_RsaManager) {
 		$this->mysql = new mysqli('localhost', 'root', 'root', "SHIKE");
 		if(isset($_POST)) {
-			$this->post = file_get_contents('php://input');
+			$str = file_get_contents('php://input');
+			$str = base64_decode($str);
+			$this->post = $_RsaManager->privateDecrypt($str);
 			try {
 				$this->json = json_decode($this->post, TRUE);
 			} catch (Exception $e) {
@@ -111,6 +113,6 @@ class UserManager {
 	}
 }
 
-$_UserManager = new UserManager();
+$_UserManager = new UserManager($_RsaManager);
 $_UserManager->initSess();
 ?>
